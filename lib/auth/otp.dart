@@ -85,87 +85,147 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFFF8C42),
+      backgroundColor: Colors.grey[900],
       body: SafeArea(
-        child: Container(
-          decoration: const BoxDecoration(
-            color: Color(0xFF1E1B18),
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(40),
-              topRight: Radius.circular(40),
-            ),
-          ),
-          child: Column(
-            children: [
-              const SizedBox(height: 40),
-              const Text(
-                'Verify OTP',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Logo/Icon
+                Icon(
+                  Icons.verified_user,
+                  size: 80,
+                  color: Colors.orange[600],
                 ),
-              ),
-              const SizedBox(height: 40),
-              Expanded(
-                child: SingleChildScrollView(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 24.0, vertical: 30),
-                  child: Center(
-                    child: Column(
-                      children: [
-                        TextField(
-                          controller: _otpController,
-                          style: const TextStyle(color: Colors.white),
-                          decoration: InputDecoration(
-                            hintText: 'Enter OTP',
-                            hintStyle: const TextStyle(color: Colors.white70),
-                            filled: true,
-                            fillColor: const Color(0xFF2C2925),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide.none,
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: const BorderSide(
-                                color: Color(0xFFF4A261),
-                                width: 2.0,
-                              ),
-                            ),
+                const SizedBox(height: 20),
+                // Title
+                Text(
+                  'Verify OTP',
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.orange[600],
+                    letterSpacing: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  'Enter the OTP sent to ${widget.email}',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey[400],
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 30),
+
+                // Form Container
+                Container(
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[800],
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.3),
+                        blurRadius: 10,
+                        offset: const Offset(0, 5),
+                      ),
+                    ],
+                  ),
+                  child: Column(
+                    children: [
+                      // OTP Field
+                      TextField(
+                        controller: _otpController,
+                        style: const TextStyle(color: Colors.white),
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          labelText: 'OTP Code',
+                          labelStyle: TextStyle(color: Colors.grey[400]),
+                          filled: true,
+                          fillColor: Colors.grey[700],
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide.none,
                           ),
+                          prefixIcon: Icon(Icons.lock_outline,
+                              color: Colors.orange[600]),
+                          contentPadding: const EdgeInsets.symmetric(
+                              vertical: 16, horizontal: 20),
                         ),
-                        const SizedBox(height: 20),
-                        ElevatedButton(
-                          onPressed: _verifyOtp,
+                      ),
+                      const SizedBox(height: 25),
+
+                      // Verify Button
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFFF8C42),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 100, vertical: 15),
+                            backgroundColor: Colors.orange[600],
+                            foregroundColor: Colors.black,
+                            padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                              borderRadius: BorderRadius.circular(10),
                             ),
+                            elevation: 5,
                           ),
-                          child: const Text('Verify OTP'),
+                          onPressed: _verifyOtp,
+                          child: _isLoading
+                              ? const SizedBox(
+                                  height: 20,
+                                  width: 20,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.black,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : const Text(
+                                  'VERIFY OTP',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 1.2,
+                                  ),
+                                ),
                         ),
-                        const SizedBox(height: 20),
-                        if (_isLoading)
-                          const CircularProgressIndicator(
-                              color: Color(0xFFF4A261)),
-                        if (_errorMessage.isNotEmpty)
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Text(
-                              _errorMessage,
-                              style: const TextStyle(color: Color(0xFFF4A261)),
+                      ),
+
+                      // Error Message
+                      if (_errorMessage.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 16),
+                          child: Text(
+                            _errorMessage,
+                            style: TextStyle(
+                              color: Colors.red[400],
+                              fontSize: 14,
                             ),
+                            textAlign: TextAlign.center,
                           ),
-                      ],
+                        ),
+                    ],
+                  ),
+                ),
+
+                // Resend OTP Link
+                const SizedBox(height: 25),
+                TextButton(
+                  onPressed: () {
+                    // Add resend OTP functionality here
+                  },
+                  child: Text(
+                    "Didn't receive OTP? Resend",
+                    style: TextStyle(
+                      color: Colors.orange[600],
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

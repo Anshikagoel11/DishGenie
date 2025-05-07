@@ -1,5 +1,6 @@
-import 'package:dishgenie/screens/aichat.dart';
+import 'package:dishgenie/screens/profile.dart';
 import 'package:flutter/material.dart';
+import 'package:dishgenie/screens/aichat.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -8,10 +9,22 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen>
+    with SingleTickerProviderStateMixin {
   final PageController _carouselController = PageController();
   int _currentCarouselIndex = 0;
+  int _currentNavIndex = 0;
+  late AnimationController _navAnimationController;
+  late Animation<double> _navAnimation;
 
+  // Define orange color palette
+  final Color _primaryOrange = Color(0xFFFF6D00);
+  final Color _lightOrange = Color(0xFFFF9E40);
+  final Color _darkOrange = Color(0xFFFF3D00);
+  final Color _backgroundColor = Color(0xFFF5F5F5);
+  final Color _textColor = Color(0xFF333333);
+
+  // ... (keep your existing _carouselItems and _quickRecipes lists)
   final List<Map<String, dynamic>> _carouselItems = [
     {
       'image': "assets/images/nonveg.png",
@@ -63,7 +76,6 @@ class _HomeScreenState extends State<HomeScreen> {
     },
   ];
 
-  // Sample recipes data
   final List<Map<String, dynamic>> _quickRecipes = [
     {
       'title': 'Avocado Toast',
@@ -211,14 +223,25 @@ class _HomeScreenState extends State<HomeScreen> {
         'Serve warm'
       ]
     }
-  ];
 
+    // ... (rest of your quickRecipes data remains the same)
+  ];
   @override
   void initState() {
     super.initState();
     _autoScrollCarousel();
+    _navAnimationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    _navAnimation = CurvedAnimation(
+      parent: _navAnimationController,
+      curve: Curves.easeInOut,
+    );
+    _navAnimationController.forward();
   }
 
+  // ... (keep your existing _autoScrollCarousel and dispose methods)
   void _autoScrollCarousel() {
     Future.delayed(const Duration(seconds: 3), () {
       if (_currentCarouselIndex < _carouselItems.length - 1) {
@@ -240,440 +263,665 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     _carouselController.dispose();
+    _navAnimationController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Scaffold(
-      backgroundColor: theme.colorScheme.background,
-      appBar: AppBar(
-        title: const Text('DishGenie'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.search),
-            onPressed: () {},
+    return Theme(
+      data: ThemeData(
+        colorScheme: ColorScheme.light(
+          primary: _primaryOrange,
+          secondary: _lightOrange,
+          surface: Colors.white,
+          background: _backgroundColor,
+          onPrimary: Colors.white,
+          onSecondary: Colors.white,
+          onSurface: _textColor,
+          onBackground: _textColor,
+        ),
+        appBarTheme: AppBarTheme(
+          backgroundColor: Colors.white,
+          elevation: 0,
+          iconTheme: IconThemeData(color: _textColor),
+          titleTextStyle: TextStyle(
+            color: _textColor,
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
           ),
-        ],
+        ),
+        cardTheme: CardTheme(
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          margin: EdgeInsets.zero,
+        ),
+        bottomNavigationBarTheme: BottomNavigationBarThemeData(
+          backgroundColor: Colors.white,
+          selectedItemColor: _primaryOrange,
+          unselectedItemColor: Colors.grey[600],
+          elevation: 8,
+          type: BottomNavigationBarType.fixed,
+        ),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Carousel Section
-            SizedBox(
-              height: 220,
-              child: Stack(
-                children: [
-                  PageView.builder(
-                    controller: _carouselController,
-                    itemCount: _carouselItems.length,
-                    onPageChanged: (index) {
-                      setState(() {
-                        _currentCarouselIndex = index;
-                      });
-                    },
-                    itemBuilder: (context, index) {
-                      final item = _carouselItems[index];
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(12),
-                          child: Stack(
-                            children: [
-                              Image.asset(
-                                item['image'],
-                                width: double.infinity,
-                                height: double.infinity,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    Container(
-                                  color: Colors.grey[200],
-                                  child: const Icon(Icons.fastfood, size: 50),
+      child: Scaffold(
+        backgroundColor: _backgroundColor,
+        appBar: AppBar(
+          title: const Text('DishGenie'),
+          actions: [
+            IconButton(
+              icon: Icon(Icons.search, color: _textColor),
+              onPressed: () {},
+            ),
+          ],
+        ),
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              // Carousel Section
+              SizedBox(
+                height: 220,
+                child: Stack(
+                  children: [
+                    PageView.builder(
+                      controller: _carouselController,
+                      itemCount: _carouselItems.length,
+                      onPageChanged: (index) {
+                        setState(() {
+                          _currentCarouselIndex = index;
+                        });
+                      },
+                      itemBuilder: (context, index) {
+                        final item = _carouselItems[index];
+                        return Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Stack(
+                              children: [
+                                Image.asset(
+                                  item['image'],
+                                  width: double.infinity,
+                                  height: double.infinity,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) =>
+                                      Container(
+                                    color: Colors.grey[200],
+                                    child: Icon(Icons.fastfood,
+                                        size: 50, color: _primaryOrange),
+                                  ),
                                 ),
-                              ),
-                              Container(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.bottomCenter,
-                                    end: Alignment.topCenter,
-                                    colors: [
-                                      Colors.black.withOpacity(0.7),
-                                      Colors.transparent,
+                                Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      begin: Alignment.bottomCenter,
+                                      end: Alignment.topCenter,
+                                      colors: [
+                                        Colors.black.withOpacity(0.7),
+                                        Colors.transparent,
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                Positioned(
+                                  bottom: 16,
+                                  left: 16,
+                                  right: 16,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        item['title'],
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Row(
+                                        children: [
+                                          const Icon(
+                                              Icons.local_fire_department,
+                                              size: 16,
+                                              color: Colors.white),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            item['calories'],
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                          const Spacer(),
+                                          const Icon(Icons.star,
+                                              size: 16, color: Colors.amber),
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            '${item['rating']} (${item['reviewCount']})',
+                                            style: const TextStyle(
+                                              color: Colors.white,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        item['quote'],
+                                        style: const TextStyle(
+                                          color: Colors.white,
+                                          fontStyle: FontStyle.italic,
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
                                     ],
                                   ),
                                 ),
-                              ),
-                              Positioned(
-                                bottom: 16,
-                                left: 16,
-                                right: 16,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      item['title'],
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Row(
-                                      children: [
-                                        const Icon(Icons.local_fire_department,
-                                            size: 16, color: Colors.white),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          item['calories'],
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                        const Spacer(),
-                                        const Icon(Icons.star,
-                                            size: 16, color: Colors.amber),
-                                        const SizedBox(width: 4),
-                                        Text(
-                                          '${item['rating']} (${item['reviewCount']})',
-                                          style: const TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                      item['quote'],
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontStyle: FontStyle.italic,
-                                      ),
-                                      maxLines: 2,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    Positioned(
+                      bottom: 10,
+                      left: 0,
+                      right: 0,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: List.generate(
+                          _carouselItems.length,
+                          (index) => Container(
+                            width: 8,
+                            height: 8,
+                            margin: const EdgeInsets.symmetric(horizontal: 4),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: _currentCarouselIndex == index
+                                  ? _primaryOrange
+                                  : Colors.white.withOpacity(0.5),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // AI Chatbot Section - Updated with orange theme
+              Column(
+                children: [
+                  // Orange Gradient Card for "Ask Our Recipe Genie"
+                  Container(
+                    margin:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          _lightOrange,
+                          _primaryOrange,
+                        ],
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: _primaryOrange.withOpacity(0.2),
+                          blurRadius: 8,
+                          offset: Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(12),
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const RecipeAIBotScreen(),
+                            ),
+                          );
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.auto_awesome,
+                                  size: 24, color: Colors.white),
+                              const SizedBox(width: 12),
+                              Text(
+                                'Ask Our Recipe Genie',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
                                 ),
                               ),
                             ],
                           ),
                         ),
-                      );
-                    },
+                      ),
+                    ),
                   ),
-                  Positioned(
-                    bottom: 10,
-                    left: 0,
-                    right: 0,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: List.generate(
-                        _carouselItems.length,
-                        (index) => Container(
-                          width: 8,
-                          height: 8,
-                          margin: const EdgeInsets.symmetric(horizontal: 4),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: _currentCarouselIndex == index
-                                ? theme.colorScheme.primary
-                                : Colors.white.withOpacity(0.5),
+
+                  // AI Chat Image Card
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0, vertical: 8.0),
+                    child: Card(
+                      elevation: 4,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Stack(
+                        children: [
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(12),
+                            child: Image.asset(
+                              'assets/images/ai2.png',
+                              height: 160,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                            ),
                           ),
-                        ),
+                          Container(
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(12),
+                              gradient: LinearGradient(
+                                begin: Alignment.bottomCenter,
+                                end: Alignment.topCenter,
+                                colors: [
+                                  _primaryOrange.withOpacity(0.6),
+                                  Colors.transparent,
+                                ],
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            bottom: 16,
+                            left: 0,
+                            right: 0,
+                            child: Center(
+                              child: ElevatedButton.icon(
+                                onPressed: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const RecipeAIBotScreen(),
+                                    ),
+                                  );
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: _primaryOrange,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(15),
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 9, vertical: 8),
+                                  elevation: 4,
+                                ),
+                                icon: Icon(Icons.chat, size: 17),
+                                label: Text(
+                                  'Chat with AI Chef',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
                 ],
               ),
-            ),
-            const SizedBox(height: 40),
+              const SizedBox(height: 24),
 
-//ai chatbot column
-            Column(
-              children: [
-                // Animated Orange Button Heading
-                Padding(
-                  padding: const EdgeInsets.only(top: 16.0, bottom: 8.0),
-                  child: TweenAnimationBuilder(
-                    duration: const Duration(milliseconds: 600),
-                    tween: Tween<double>(begin: 0, end: 1),
-                    builder: (context, value, child) {
-                      return Transform.scale(
-                        scale: value,
-                        child: Opacity(
-                          opacity: value,
-                          child: ElevatedButton(
-                            onPressed: () {},
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.orange[300],
-                              foregroundColor:
-                                  const Color.fromARGB(255, 54, 54, 54),
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 28, vertical: 14),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(
-                                    8), // Slightly rounded
+              // Recipes Section
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              'Recipes You Can Make Now',
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                                color: _textColor,
                               ),
-                              elevation: 4,
-                              shadowColor: Colors.orange.withOpacity(0.2),
-                            ),
-                            child: const Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.auto_awesome, size: 22),
-                                SizedBox(width: 10),
-                                Text(
-                                  'Ask Our Recipe Genie',
-                                  style: TextStyle(
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ],
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) =>
+                                      AllRecipesScreen(recipes: _quickRecipes),
+                                ),
+                              );
+                            },
+                            child: Text(
+                              'View All',
+                              style: TextStyle(
+                                color: _primaryOrange,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+
+                    // Recipe Cards
+                    Column(
+                      children: List.generate(
+                        2,
+                        (index) => Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: RecipeCard(
+                            title: _quickRecipes[index]['title'],
+                            calories: _quickRecipes[index]['calories'],
+                            time: _quickRecipes[index]['time'],
+                            rating: _quickRecipes[index]['rating'],
+                            imageUrl: _quickRecipes[index]['image'],
+                            primaryColor: _primaryOrange,
+                          ),
                         ),
-                      );
-                    },
+                      ),
+                    ),
+
+                    // View All Button
+                    Center(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  AllRecipesScreen(recipes: _quickRecipes),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _lightOrange,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15),
+                          ),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 26, vertical: 12),
+                          elevation: 2,
+                          shadowColor: _primaryOrange.withOpacity(0.3),
+                        ),
+                        child: const Text(
+                          'View All Recipes',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        bottomNavigationBar: AnimatedBuilder(
+          animation: _navAnimation,
+          builder: (context, child) {
+            return Transform.translate(
+              offset: Offset(0, (1 - _navAnimation.value) * 50),
+              child: Opacity(
+                opacity: _navAnimation.value,
+                child: child,
+              ),
+            );
+          },
+          child: BottomNavigationBar(
+            currentIndex: _currentNavIndex,
+            onTap: (index) {
+              if (index == 1) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const RecipeAIBotScreen(),
+                  ),
+                );
+              }
+              if (index == 3) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ProfileScreen(),
+                  ),
+                );
+              } else {
+                setState(() {
+                  _currentNavIndex = index;
+                });
+              }
+              _navAnimationController.reset();
+              _navAnimationController.forward();
+            },
+            type: BottomNavigationBarType.fixed,
+            selectedFontSize: 12,
+            unselectedFontSize: 12,
+            items: [
+              BottomNavigationBarItem(
+                icon: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  transitionBuilder: (child, animation) {
+                    return ScaleTransition(scale: animation, child: child);
+                  },
+                  child: Icon(
+                    Icons.home,
+                    key: ValueKey<bool>(_currentNavIndex == 0),
+                    color: _currentNavIndex == 0
+                        ? _primaryOrange
+                        : Colors.grey[600],
                   ),
                 ),
+                label: 'Home',
+              ),
+              BottomNavigationBarItem(
+                icon: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  transitionBuilder: (child, animation) {
+                    return ScaleTransition(scale: animation, child: child);
+                  },
+                  child: Icon(
+                    Icons.chat_bubble,
+                    key: ValueKey<bool>(_currentNavIndex == 1),
+                    color: _currentNavIndex == 1
+                        ? _primaryOrange
+                        : Colors.grey[600],
+                  ),
+                ),
+                label: 'Ask Genie',
+              ),
+              BottomNavigationBarItem(
+                icon: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  transitionBuilder: (child, animation) {
+                    return ScaleTransition(scale: animation, child: child);
+                  },
+                  child: Icon(
+                    Icons.favorite,
+                    key: ValueKey<bool>(_currentNavIndex == 2),
+                    color: _currentNavIndex == 2
+                        ? _primaryOrange
+                        : Colors.grey[600],
+                  ),
+                ),
+                label: 'Favorites',
+              ),
+              BottomNavigationBarItem(
+                icon: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  transitionBuilder: (child, animation) {
+                    return ScaleTransition(scale: animation, child: child);
+                  },
+                  child: Icon(
+                    Icons.person,
+                    key: ValueKey<bool>(_currentNavIndex == 3),
+                    color: _currentNavIndex == 3
+                        ? _primaryOrange
+                        : Colors.grey[600],
+                  ),
+                ),
+                label: 'Profile',
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
 
-                // Image with Button Section
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 16.0, vertical: 8.0),
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      // Background image container
-                      Container(
-                        height: 180,
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(10),
-                          image: const DecorationImage(
-                            image: AssetImage('assets/images/ai2.png'),
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(10),
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: [
-                                Colors.transparent,
-                                Colors.orange.withOpacity(0.4),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
+// Update your RecipeCard to accept primaryColor
+class RecipeCard extends StatelessWidget {
+  final String title;
+  final String calories;
+  final String time;
+  final double rating;
+  final String imageUrl;
+  final double? width;
+  final Color primaryColor;
 
-                      // Floating Action Button
-                      Positioned(
-                        bottom: 20,
-                        child: ElevatedButton.icon(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) =>
-                                      const RecipeAIBotScreen()),
-                            );
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor:
-                                const Color.fromARGB(255, 90, 90, 88),
-                            foregroundColor:
-                                const Color.fromARGB(255, 234, 191, 91),
-                            shape: RoundedRectangleBorder(
-                              borderRadius:
-                                  BorderRadius.circular(6), // Minimal rounding
-                            ),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 22, vertical: 10),
-                            elevation: 4,
-                          ),
-                          icon: const Icon(Icons.chat_bubble_outline, size: 20),
-                          label: const Text(
-                            'Chat with Genie',
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+  const RecipeCard({
+    super.key,
+    required this.title,
+    required this.calories,
+    required this.time,
+    required this.rating,
+    required this.imageUrl,
+    this.width,
+    required this.primaryColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: width,
+      child: Card(
+        elevation: 2,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Image with orange overlay
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(12)),
+                  child: Image.asset(
+                    imageUrl,
+                    height: width == null ? 140 : 120,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => Container(
+                      height: width == null ? 140 : 120,
+                      color: Colors.grey[200],
+                      child:
+                          Icon(Icons.fastfood, size: 40, color: primaryColor),
+                    ),
+                  ),
+                ),
+                Container(
+                  height: width == null ? 140 : 120,
+                  decoration: BoxDecoration(
+                    borderRadius:
+                        const BorderRadius.vertical(top: Radius.circular(12)),
+                    gradient: LinearGradient(
+                      begin: Alignment.bottomCenter,
+                      end: Alignment.topCenter,
+                      colors: [
+                        primaryColor.withOpacity(0.2),
+                        Colors.transparent,
+                      ],
+                    ),
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 40),
-            // Recipes Section
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              padding: const EdgeInsets.all(12.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Flexible(
-                          child: Text(
-                            'Recipes You Can Make Now',
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: theme.colorScheme.onBackground,
-                            ),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    AllRecipesScreen(recipes: _quickRecipes),
-                              ),
-                            );
-                          },
-                          child: Text(
-                            'View All',
-                            style: TextStyle(
-                              color: theme.colorScheme.primary,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      ],
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: Colors.black87,
                     ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 16),
-
-                  // Show only 2 recipe cards on home screen
-                  Column(
-                    children: List.generate(
-                        2,
-                        (index) => Padding(
-                              padding: const EdgeInsets.only(bottom: 16),
-                              child: RecipeCard(
-                                title: _quickRecipes[index]['title'],
-                                calories: _quickRecipes[index]['calories'],
-                                time: _quickRecipes[index]['time'],
-                                rating: _quickRecipes[index]['rating'],
-                                imageUrl: _quickRecipes[index]['image'],
-                              ),
-                            )),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Icon(Icons.schedule, size: 14, color: Colors.grey[600]),
+                      const SizedBox(width: 4),
+                      Text(time,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                          )),
+                      const Spacer(),
+                      Icon(Icons.local_fire_department,
+                          size: 14, color: Colors.grey[600]),
+                      const SizedBox(width: 4),
+                      Text(calories,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                          )),
+                    ],
                   ),
-
-                  // Beautiful "View All" button
-                  Center(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                AllRecipesScreen(recipes: _quickRecipes),
-                          ),
-                        );
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: theme.colorScheme.primary,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 32, vertical: 12),
-                      ),
-                      child: const Text(
-                        'View All Recipes',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Seasonal recipes section
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Text(
-                      'Seasonal Vegetable Recipes',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.bold,
-                        color: theme.colorScheme.onBackground,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    height: 200,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: 5,
-                      itemBuilder: (context, index) {
-                        return Padding(
-                          padding: const EdgeInsets.only(right: 16),
-                          child: RecipeCard(
-                            title: 'Seasonal Veg ${index + 1}',
-                            calories: '${160 + index * 40} cal',
-                            time: '${12 + index * 5} mins',
-                            rating: 4.0 + (index * 0.15),
-                            imageUrl: 'assets/images/seasonal${index + 1}.jpg',
-                            width: 150,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 32),
                 ],
               ),
             ),
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0,
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chat_bubble),
-            label: 'Ask to AI',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.favorite),
-            label: 'Favorites',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
-      ),
     );
   }
 }
 
+// Update AllRecipesScreen with orange theme
 class AllRecipesScreen extends StatelessWidget {
   final List<Map<String, dynamic>> recipes;
 
@@ -681,41 +929,91 @@ class AllRecipesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final Color primaryOrange = Color(0xFFFF6D00);
+    final Color textColor = Color(0xFF333333);
+    final Color lightBackground = Color(0xFFF5F5F5);
 
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('All Recipes'),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            // Show all recipes in a column
-            ListView.separated(
-              physics: const NeverScrollableScrollPhysics(),
-              shrinkWrap: true,
-              itemCount: recipes.length,
-              separatorBuilder: (context, index) => const SizedBox(height: 16),
-              itemBuilder: (context, index) {
-                return ExpandableRecipeCard(
-                  title: recipes[index]['title'],
-                  calories: recipes[index]['calories'],
-                  time: recipes[index]['time'],
-                  rating: recipes[index]['rating'],
-                  imageUrl: recipes[index]['image'],
-                  ingredients: recipes[index]['ingredients'],
-                  instructions: recipes[index]['instructions'],
-                );
-              },
+    return Theme(
+      data: Theme.of(context).copyWith(
+        colorScheme: Theme.of(context).colorScheme.copyWith(
+              primary: primaryOrange,
+              secondary: Color(0xFFFF9E40),
             ),
-          ],
+      ),
+      child: Scaffold(
+        backgroundColor: lightBackground,
+        appBar: AppBar(
+          title: Text(
+            'All Recipes',
+            style: TextStyle(
+              color: textColor,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          backgroundColor: Colors.white,
+          elevation: 0,
+          iconTheme: IconThemeData(color: textColor),
+        ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            children: [
+              // Search bar with orange accent
+              Container(
+                margin: const EdgeInsets.only(bottom: 16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 6,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: TextField(
+                  decoration: InputDecoration(
+                    hintText: 'Search recipes...',
+                    prefixIcon: Icon(Icons.search, color: primaryOrange),
+                    border: InputBorder.none,
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 14,
+                    ),
+                  ),
+                ),
+              ),
+
+              // Recipe list with orange theme
+              ListView.separated(
+                physics: const NeverScrollableScrollPhysics(),
+                shrinkWrap: true,
+                itemCount: recipes.length,
+                separatorBuilder: (context, index) =>
+                    const SizedBox(height: 16),
+                itemBuilder: (context, index) {
+                  return ExpandableRecipeCard(
+                    title: recipes[index]['title'],
+                    calories: recipes[index]['calories'],
+                    time: recipes[index]['time'],
+                    rating: recipes[index]['rating'],
+                    imageUrl: recipes[index]['image'],
+                    ingredients: recipes[index]['ingredients'],
+                    instructions: recipes[index]['instructions'],
+                    primaryColor: primaryOrange,
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 
+// Update ExpandableRecipeCard to accept primaryColor
 class ExpandableRecipeCard extends StatefulWidget {
   final String title;
   final String calories;
@@ -724,6 +1022,7 @@ class ExpandableRecipeCard extends StatefulWidget {
   final String imageUrl;
   final List<String>? ingredients;
   final List<String>? instructions;
+  final Color primaryColor;
 
   const ExpandableRecipeCard({
     super.key,
@@ -734,6 +1033,7 @@ class ExpandableRecipeCard extends StatefulWidget {
     required this.imageUrl,
     this.ingredients,
     this.instructions,
+    required this.primaryColor,
   });
 
   @override
@@ -745,9 +1045,11 @@ class _ExpandableRecipeCardState extends State<ExpandableRecipeCard> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(12.0),
         child: Column(
@@ -757,19 +1059,29 @@ class _ExpandableRecipeCardState extends State<ExpandableRecipeCard> {
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Recipe Image
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(8),
-                  child: Image.asset(
-                    widget.imageUrl,
-                    width: 80,
-                    height: 80,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => Container(
+                // Recipe Image with orange border
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: widget.primaryColor.withOpacity(0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(7),
+                    child: Image.asset(
+                      widget.imageUrl,
                       width: 80,
                       height: 80,
-                      color: Colors.grey[200],
-                      child: const Icon(Icons.fastfood, size: 40),
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        width: 80,
+                        height: 80,
+                        color: Colors.grey[200],
+                        child: Icon(Icons.fastfood,
+                            size: 40, color: widget.primaryColor),
+                      ),
                     ),
                   ),
                 ),
@@ -785,43 +1097,33 @@ class _ExpandableRecipeCardState extends State<ExpandableRecipeCard> {
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,
-                          color: theme.colorScheme.onBackground,
+                          color: Colors.black87,
                         ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Icon(Icons.local_fire_department,
-                              size: 14,
-                              color: theme.colorScheme.onBackground
-                                  .withOpacity(0.6)),
-                          const SizedBox(width: 4),
-                          Text(
-                            widget.calories,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: theme.colorScheme.onBackground
-                                  .withOpacity(0.6),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 8),
                       Row(
                         children: [
                           Icon(Icons.schedule,
-                              size: 14,
-                              color: theme.colorScheme.onBackground
-                                  .withOpacity(0.6)),
+                              size: 14, color: Colors.grey[600]),
                           const SizedBox(width: 4),
                           Text(
                             widget.time,
                             style: TextStyle(
                               fontSize: 12,
-                              color: theme.colorScheme.onBackground
-                                  .withOpacity(0.6),
+                              color: Colors.grey[600],
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Icon(Icons.local_fire_department,
+                              size: 14, color: Colors.grey[600]),
+                          const SizedBox(width: 4),
+                          Text(
+                            widget.calories,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey[600],
                             ),
                           ),
                         ],
@@ -830,12 +1132,12 @@ class _ExpandableRecipeCardState extends State<ExpandableRecipeCard> {
                   ),
                 ),
 
-                // Rating
+                // Rating with orange background
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
-                    color: theme.colorScheme.primary,
+                    color: widget.primaryColor,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Row(
@@ -857,40 +1159,44 @@ class _ExpandableRecipeCardState extends State<ExpandableRecipeCard> {
               ],
             ),
 
-            // Short Description (always visible)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Text(
-                'A delicious ${widget.title.toLowerCase()} that can be prepared in just ${widget.time}. Perfect for quick meals!',
-                style: TextStyle(
-                  fontSize: 13,
-                  color: theme.colorScheme.onBackground.withOpacity(0.8),
-                ),
-              ),
-            ),
-
             // Expandable Content
             if (_isExpanded) ...[
               const SizedBox(height: 12),
-              const Divider(height: 1),
+              Divider(height: 1, color: Colors.grey[300]),
               const SizedBox(height: 12),
               Text(
                 'Ingredients:',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.onBackground,
+                  color: Colors.black87,
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 8),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: widget.ingredients
-                        ?.map((ingredient) => Text(
-                              '• $ingredient',
-                              style: TextStyle(
-                                fontSize: 13,
-                                color: theme.colorScheme.onBackground
-                                    .withOpacity(0.8),
+                        ?.map((ingredient) => Padding(
+                              padding: const EdgeInsets.only(bottom: 4),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '• ',
+                                    style: TextStyle(
+                                      color: widget.primaryColor,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Text(
+                                      ingredient,
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.grey[700],
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ))
                         .toList() ??
@@ -901,24 +1207,37 @@ class _ExpandableRecipeCardState extends State<ExpandableRecipeCard> {
                 'Instructions:',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.onBackground,
+                  color: Colors.black87,
                 ),
               ),
-              const SizedBox(height: 4),
+              const SizedBox(height: 8),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: widget.instructions
                         ?.asMap()
                         .entries
                         .map((entry) => Padding(
-                              padding: const EdgeInsets.only(bottom: 4),
-                              child: Text(
-                                '${entry.key + 1}. ${entry.value}',
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: theme.colorScheme.onBackground
-                                      .withOpacity(0.8),
-                                ),
+                              padding: const EdgeInsets.only(bottom: 8),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '${entry.key + 1}. ',
+                                    style: TextStyle(
+                                      color: widget.primaryColor,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Text(
+                                      entry.value,
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.grey[700],
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ))
                         .toList() ??
@@ -926,7 +1245,7 @@ class _ExpandableRecipeCardState extends State<ExpandableRecipeCard> {
               ),
             ],
 
-            // View More/Less Button
+            // View More/Less Button with orange color
             Align(
               alignment: Alignment.centerRight,
               child: TextButton(
@@ -943,110 +1262,11 @@ class _ExpandableRecipeCardState extends State<ExpandableRecipeCard> {
                 child: Text(
                   _isExpanded ? 'View Less' : 'View More',
                   style: TextStyle(
-                    color: theme.colorScheme.primary,
+                    color: widget.primaryColor,
                     fontSize: 12,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class RecipeCard extends StatelessWidget {
-  final String title;
-  final String calories;
-  final String time;
-  final double rating;
-  final String imageUrl;
-  final double? width;
-
-  const RecipeCard({
-    super.key,
-    required this.title,
-    required this.calories,
-    required this.time,
-    required this.rating,
-    required this.imageUrl,
-    this.width,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return SizedBox(
-      width: width,
-      child: Card(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ClipRRect(
-              borderRadius:
-                  const BorderRadius.vertical(top: Radius.circular(12)),
-              child: Image.asset(
-                imageUrl,
-                height: width == null ? 120 : 100,
-                width: double.infinity,
-                fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) => Container(
-                  height: width == null ? 120 : 100,
-                  color: Colors.grey[200],
-                  child: const Icon(Icons.fastfood, size: 40),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                      color: theme.colorScheme.onBackground,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Icon(Icons.schedule,
-                          size: 14,
-                          color:
-                              theme.colorScheme.onBackground.withOpacity(0.6)),
-                      const SizedBox(width: 4),
-                      Text(time,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color:
-                                theme.colorScheme.onBackground.withOpacity(0.6),
-                          )),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Icon(Icons.local_fire_department,
-                          size: 14,
-                          color:
-                              theme.colorScheme.onBackground.withOpacity(0.6)),
-                      const SizedBox(width: 4),
-                      Text(calories,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color:
-                                theme.colorScheme.onBackground.withOpacity(0.6),
-                          )),
-                    ],
-                  ),
-                ],
               ),
             ),
           ],

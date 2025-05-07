@@ -1,4 +1,3 @@
-// Your import statements remain unchanged
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -16,6 +15,11 @@ class _RecipeAIBotScreenState extends State<RecipeAIBotScreen> {
   final List<ChatMessage> _messages = [];
   final ScrollController _scrollController = ScrollController();
   bool _isLoading = false;
+
+  final Color _orangeDeep = const Color.fromARGB(255, 234, 112, 6);
+  final Color _orangeLight = const Color.fromARGB(255, 242, 140, 77);
+  final Color _orangePale = const Color(0xFFFFF3E0);
+  final Color _background = const Color(0xFFFFFBF5);
 
   @override
   void initState() {
@@ -185,14 +189,27 @@ class _RecipeAIBotScreenState extends State<RecipeAIBotScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Recipe Genie'),
-        centerTitle: true,
-        backgroundColor: Colors.orange[400],
-        elevation: 0,
-        iconTheme: const IconThemeData(color: Colors.white),
+      appBar: PreferredSize(
+        preferredSize: const Size.fromHeight(kToolbarHeight),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFFFF8C00), Color(0xFFFFB347)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            centerTitle: true,
+            title: const Text('Recipe Genie',
+                style: TextStyle(color: Colors.white)),
+            iconTheme: const IconThemeData(color: Colors.white),
+          ),
+        ),
       ),
-      backgroundColor: Colors.grey[50],
+      backgroundColor: _background,
       body: Column(
         children: [
           Expanded(
@@ -262,10 +279,8 @@ class _RecipeAIBotScreenState extends State<RecipeAIBotScreen> {
                   borderRadius: BorderRadius.circular(24),
                   borderSide: BorderSide.none,
                 ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 14,
-                ),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
               ),
               onSubmitted: (_) => _sendMessage(),
             ),
@@ -274,7 +289,11 @@ class _RecipeAIBotScreenState extends State<RecipeAIBotScreen> {
           Container(
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: Colors.orange[400],
+              gradient: LinearGradient(
+                colors: [_orangeDeep, _orangeLight],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
             ),
             child: IconButton(
               icon: const Icon(Icons.send, color: Colors.white),
@@ -313,7 +332,7 @@ class ChatMessage extends StatelessWidget {
           if (!isUser && !isWelcome)
             const CircleAvatar(
               radius: 16,
-              backgroundColor: Colors.orange,
+              backgroundColor: Color(0xFFFF8C00),
               child: Icon(Icons.auto_awesome, size: 16, color: Colors.white),
             ),
           if (!isUser && !isWelcome) const SizedBox(width: 8),
@@ -322,9 +341,9 @@ class ChatMessage extends StatelessWidget {
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: isWelcome
-                    ? Colors.orange[50]
+                    ? Color(0xFFFFF3E0)
                     : isUser
-                        ? Colors.orange[400]
+                        ? Color(0xFFFFA040)
                         : Colors.grey[200],
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(12),
@@ -332,8 +351,7 @@ class ChatMessage extends StatelessWidget {
                   bottomLeft: Radius.circular(isUser ? 12 : 0),
                   bottomRight: Radius.circular(isUser ? 0 : 12),
                 ),
-                border:
-                    isWelcome ? Border.all(color: Colors.orange[100]!) : null,
+                border: isWelcome ? Border.all(color: Color(0xFFFFE0B2)) : null,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -341,12 +359,12 @@ class ChatMessage extends StatelessWidget {
                   if (isWelcome)
                     Row(
                       children: [
-                        Icon(Icons.star, color: Colors.orange[400], size: 16),
+                        Icon(Icons.star, color: Color(0xFFFF8C00), size: 16),
                         const SizedBox(width: 4),
                         Text(
                           'TIP',
                           style: TextStyle(
-                            color: Colors.orange[600],
+                            color: Color(0xFFEF6C00),
                             fontWeight: FontWeight.bold,
                             fontSize: 12,
                           ),

@@ -1,3 +1,4 @@
+import 'package:dishgenie/auth/login.dart';
 import 'package:dishgenie/auth/register.dart';
 import 'package:dishgenie/screens/home.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +11,7 @@ class AuthScreen extends StatelessWidget {
     final width = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF4A261),
+      backgroundColor: const Color.fromARGB(255, 240, 158, 90),
       body: SafeArea(
         child: Container(
           decoration: const BoxDecoration(
@@ -88,8 +89,10 @@ class AuthScreen extends StatelessWidget {
                       },
                       child: const Text("Register"),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFF4A261),
-                        foregroundColor: Colors.black,
+                        backgroundColor:
+                            const Color.fromARGB(255, 237, 126, 34),
+                        foregroundColor:
+                            const Color.fromARGB(255, 242, 238, 238),
                         minimumSize: const Size.fromHeight(50),
                         textStyle: const TextStyle(fontSize: 18),
                         shape: RoundedRectangleBorder(
@@ -100,7 +103,11 @@ class AuthScreen extends StatelessWidget {
                     const SizedBox(height: 16),
                     TextButton(
                       onPressed: () {
-                        Navigator.pushNamed(context, '/login');
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const LoginScreen()),
+                        );
                       },
                       child: const Text.rich(
                         TextSpan(

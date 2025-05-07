@@ -29,7 +29,7 @@ class _Splashscreen1State extends State<Splashscreen1> {
   ];
 
   final images = [
-    "assets/images/veg.png",
+    "assets/images/meal.png",
     "assets/images/indian.png",
     "assets/images/drinks.png",
     "assets/images/loading.png"
