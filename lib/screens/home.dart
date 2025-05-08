@@ -1,9 +1,12 @@
+import 'package:dishgenie/screens/feed.dart';
+import 'package:dishgenie/screens/postRecipe.dart';
 import 'package:dishgenie/screens/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:dishgenie/screens/aichat.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  final String email;
+  const HomeScreen({super.key, required this.email});
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -18,13 +21,12 @@ class _HomeScreenState extends State<HomeScreen>
   late Animation<double> _navAnimation;
 
   // Define orange color palette
-  final Color _primaryOrange = Color(0xFFFF6D00);
-  final Color _lightOrange = Color(0xFFFF9E40);
-  final Color _darkOrange = Color(0xFFFF3D00);
-  final Color _backgroundColor = Color(0xFFF5F5F5);
-  final Color _textColor = Color(0xFF333333);
+  final Color _primaryOrange = const Color(0xFFFF6D00);
+  final Color _lightOrange = const Color(0xFFFF9E40);
+  final Color _darkOrange = const Color(0xFFFF3D00);
+  final Color _backgroundColor = const Color(0xFFF5F5F5);
+  final Color _textColor = const Color(0xFF333333);
 
-  // ... (keep your existing _carouselItems and _quickRecipes lists)
   final List<Map<String, dynamic>> _carouselItems = [
     {
       'image': "assets/images/nonveg.png",
@@ -68,7 +70,7 @@ class _HomeScreenState extends State<HomeScreen>
     },
     {
       'image': "assets/images/paneer.png",
-      'title': 'Spicy Paneer ',
+      'title': 'Spicy Paneer',
       'calories': '330 cal',
       'rating': 4.7,
       'reviewCount': 105,
@@ -223,9 +225,8 @@ class _HomeScreenState extends State<HomeScreen>
         'Serve warm'
       ]
     }
-
-    // ... (rest of your quickRecipes data remains the same)
   ];
+
   @override
   void initState() {
     super.initState();
@@ -241,7 +242,6 @@ class _HomeScreenState extends State<HomeScreen>
     _navAnimationController.forward();
   }
 
-  // ... (keep your existing _autoScrollCarousel and dispose methods)
   void _autoScrollCarousel() {
     Future.delayed(const Duration(seconds: 3), () {
       if (_currentCarouselIndex < _carouselItems.length - 1) {
@@ -455,7 +455,7 @@ class _HomeScreenState extends State<HomeScreen>
               ),
               const SizedBox(height: 24),
 
-              // AI Chatbot Section - Updated with orange theme
+              // AI Chatbot Section
               Column(
                 children: [
                   // Orange Gradient Card for "Ask Our Recipe Genie"
@@ -707,26 +707,46 @@ class _HomeScreenState extends State<HomeScreen>
           child: BottomNavigationBar(
             currentIndex: _currentNavIndex,
             onTap: (index) {
-              if (index == 1) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const RecipeAIBotScreen(),
-                  ),
-                );
+              setState(() {
+                _currentNavIndex = index;
+              });
+
+              switch (index) {
+                case 1:
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const RecipeAIBotScreen(),
+                    ),
+                  );
+                  break;
+                case 2:
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          PostRecipeScreen(email: widget.email),
+                    ),
+                  );
+                  break;
+                case 3:
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const RecipeFeedScreen(),
+                    ),
+                  );
+                  break;
+                case 4:
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const ProfileScreen(),
+                    ),
+                  );
+                  break;
               }
-              if (index == 3) {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ProfileScreen(),
-                  ),
-                );
-              } else {
-                setState(() {
-                  _currentNavIndex = index;
-                });
-              }
+
               _navAnimationController.reset();
               _navAnimationController.forward();
             },
@@ -737,9 +757,6 @@ class _HomeScreenState extends State<HomeScreen>
               BottomNavigationBarItem(
                 icon: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 200),
-                  transitionBuilder: (child, animation) {
-                    return ScaleTransition(scale: animation, child: child);
-                  },
                   child: Icon(
                     Icons.home,
                     key: ValueKey<bool>(_currentNavIndex == 0),
@@ -753,9 +770,6 @@ class _HomeScreenState extends State<HomeScreen>
               BottomNavigationBarItem(
                 icon: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 200),
-                  transitionBuilder: (child, animation) {
-                    return ScaleTransition(scale: animation, child: child);
-                  },
                   child: Icon(
                     Icons.chat_bubble,
                     key: ValueKey<bool>(_currentNavIndex == 1),
@@ -769,28 +783,35 @@ class _HomeScreenState extends State<HomeScreen>
               BottomNavigationBarItem(
                 icon: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 200),
-                  transitionBuilder: (child, animation) {
-                    return ScaleTransition(scale: animation, child: child);
-                  },
                   child: Icon(
-                    Icons.favorite,
+                    Icons.smart_button,
                     key: ValueKey<bool>(_currentNavIndex == 2),
                     color: _currentNavIndex == 2
                         ? _primaryOrange
                         : Colors.grey[600],
                   ),
                 ),
-                label: 'Favorites',
+                label: 'Posts',
               ),
               BottomNavigationBarItem(
                 icon: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 200),
-                  transitionBuilder: (child, animation) {
-                    return ScaleTransition(scale: animation, child: child);
-                  },
+                  child: Icon(
+                    Icons.chat_sharp,
+                    key: ValueKey<bool>(_currentNavIndex == 3),
+                    color: _currentNavIndex == 3
+                        ? _primaryOrange
+                        : Colors.grey[600],
+                  ),
+                ),
+                label: 'Feed',
+              ),
+              BottomNavigationBarItem(
+                icon: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
                   child: Icon(
                     Icons.person,
-                    key: ValueKey<bool>(_currentNavIndex == 3),
+                    key: ValueKey<bool>(_currentNavIndex == 4),
                     color: _currentNavIndex == 3
                         ? _primaryOrange
                         : Colors.grey[600],
@@ -806,7 +827,6 @@ class _HomeScreenState extends State<HomeScreen>
   }
 }
 
-// Update your RecipeCard to accept primaryColor
 class RecipeCard extends StatelessWidget {
   final String title;
   final String calories;
@@ -921,7 +941,6 @@ class RecipeCard extends StatelessWidget {
   }
 }
 
-// Update AllRecipesScreen with orange theme
 class AllRecipesScreen extends StatelessWidget {
   final List<Map<String, dynamic>> recipes;
 
@@ -929,15 +948,15 @@ class AllRecipesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color primaryOrange = Color(0xFFFF6D00);
-    final Color textColor = Color(0xFF333333);
-    final Color lightBackground = Color(0xFFF5F5F5);
+    final Color primaryOrange = const Color(0xFFFF6D00);
+    final Color textColor = const Color(0xFF333333);
+    final Color lightBackground = const Color(0xFFF5F5F5);
 
     return Theme(
       data: Theme.of(context).copyWith(
         colorScheme: Theme.of(context).colorScheme.copyWith(
               primary: primaryOrange,
-              secondary: Color(0xFFFF9E40),
+              secondary: const Color(0xFFFF9E40),
             ),
       ),
       child: Scaffold(
@@ -1013,7 +1032,6 @@ class AllRecipesScreen extends StatelessWidget {
   }
 }
 
-// Update ExpandableRecipeCard to accept primaryColor
 class ExpandableRecipeCard extends StatefulWidget {
   final String title;
   final String calories;

@@ -58,7 +58,10 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
         if (!mounted) return;
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
+          MaterialPageRoute(
+            builder: (context) =>
+                LoginScreen(email: widget.email), // Fixed this line
+          ),
         );
       } else {
         setState(() {
@@ -85,7 +88,7 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[900],
+      backgroundColor: Colors.white, // Updated background color
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -115,7 +118,7 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
                   'Enter the OTP sent to ${widget.email}',
                   style: TextStyle(
                     fontSize: 16,
-                    color: Colors.grey[400],
+                    color: Colors.grey[600], // Updated color
                   ),
                   textAlign: TextAlign.center,
                 ),
@@ -125,11 +128,11 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
                 Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: Colors.grey[800],
+                    color: Colors.grey[100], // Updated container color
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
+                        color: Colors.black.withOpacity(0.1), // Lighter shadow
                         blurRadius: 10,
                         offset: const Offset(0, 5),
                       ),
@@ -140,13 +143,15 @@ class _OtpVerifyScreenState extends State<OtpVerifyScreen> {
                       // OTP Field
                       TextField(
                         controller: _otpController,
-                        style: const TextStyle(color: Colors.white),
+                        style: const TextStyle(
+                            color: Colors.black), // Updated text color
                         keyboardType: TextInputType.number,
                         decoration: InputDecoration(
                           labelText: 'OTP Code',
-                          labelStyle: TextStyle(color: Colors.grey[400]),
+                          labelStyle: TextStyle(
+                              color: Colors.grey[600]), // Updated label color
                           filled: true,
-                          fillColor: Colors.grey[700],
+                          fillColor: Colors.grey[200], // Lighter fill color
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                             borderSide: BorderSide.none,

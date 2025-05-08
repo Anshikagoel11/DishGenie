@@ -16,12 +16,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _passwordController = TextEditingController();
   bool _isLoading = false;
   String _errorMessage = '';
+  bool _obscurePassword = true;
 
   bool _isStrongPassword(String password) {
     RegExp passwordRegExp = RegExp(
       r'^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#\$&*~]).{8,}$',
     );
     return passwordRegExp.hasMatch(password.trim());
+  }
+
+  bool _isValidEmail(String email) {
+    return RegExp(
+      r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+    ).hasMatch(email);
   }
 
   Future<void> _register() async {
@@ -37,6 +44,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
       setState(() {
         _isLoading = false;
         _errorMessage = 'Please fill all fields.';
+      });
+      return;
+    }
+
+    if (!_isValidEmail(email)) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Enter a valid email address.';
       });
       return;
     }
@@ -94,8 +109,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final email = _emailController.text.trim();
+
     return Scaffold(
-      backgroundColor: Colors.grey[900],
+      backgroundColor: Colors.white, // White background
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -103,20 +120,18 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Logo/Icon
                 Icon(
                   Icons.restaurant_menu,
                   size: 80,
-                  color: Colors.orange[600],
+                  color: Colors.orange[600], // Orange accent color
                 ),
                 const SizedBox(height: 20),
-                // Title
                 Text(
                   'DishGenie',
                   style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
-                    color: Colors.orange[600],
+                    color: Colors.orange[600], // Orange accent color
                     letterSpacing: 1.2,
                   ),
                 ),
@@ -125,36 +140,33 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   'Create your account',
                   style: TextStyle(
                     fontSize: 16,
-                    color: Colors.grey[400],
+                    color: Colors.black87, // Dark text color
                   ),
                 ),
                 const SizedBox(height: 30),
-
-                // Form Container
                 Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: Colors.grey[800],
+                    color: Colors.orange.shade50, // Light orange background
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
-                        blurRadius: 10,
-                        offset: const Offset(0, 5),
+                        color: Colors.orange.shade100,
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
                       ),
                     ],
                   ),
                   child: Column(
                     children: [
-                      // Email Field
                       TextField(
                         controller: _emailController,
-                        style: const TextStyle(color: Colors.white),
+                        style: const TextStyle(color: Colors.black87),
                         decoration: InputDecoration(
                           labelText: 'Email',
-                          labelStyle: TextStyle(color: Colors.grey[400]),
+                          labelStyle: const TextStyle(color: Colors.black87),
                           filled: true,
-                          fillColor: Colors.grey[700],
+                          fillColor: Colors.white,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                             borderSide: BorderSide.none,
@@ -167,23 +179,34 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         keyboardType: TextInputType.emailAddress,
                       ),
                       const SizedBox(height: 20),
-
-                      // Password Field
                       TextField(
                         controller: _passwordController,
-                        style: const TextStyle(color: Colors.white),
-                        obscureText: true,
+                        obscureText: _obscurePassword,
+                        style: const TextStyle(color: Colors.black87),
                         decoration: InputDecoration(
                           labelText: 'Password',
-                          labelStyle: TextStyle(color: Colors.grey[400]),
+                          labelStyle: const TextStyle(color: Colors.black87),
                           filled: true,
-                          fillColor: Colors.grey[700],
+                          fillColor: Colors.white,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                             borderSide: BorderSide.none,
                           ),
                           prefixIcon:
                               Icon(Icons.lock, color: Colors.orange[600]),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                              color: Colors.orange[600],
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _obscurePassword = !_obscurePassword;
+                              });
+                            },
+                          ),
                           contentPadding: const EdgeInsets.symmetric(
                               vertical: 16, horizontal: 20),
                         ),
@@ -194,14 +217,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         child: Text(
                           'Password must contain uppercase, lowercase, number & special character',
                           style: TextStyle(
-                            color: Colors.grey[500],
+                            color: Colors.black54,
                             fontSize: 12,
                           ),
                         ),
                       ),
                       const SizedBox(height: 25),
-
-                      // Register Button
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
@@ -220,7 +241,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                   height: 20,
                                   width: 20,
                                   child: CircularProgressIndicator(
-                                    color: Colors.black,
+                                    color: Colors.white,
                                     strokeWidth: 2,
                                   ),
                                 )
@@ -234,8 +255,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                 ),
                         ),
                       ),
-
-                      // Error Message
                       if (_errorMessage.isNotEmpty)
                         Padding(
                           padding: const EdgeInsets.only(top: 16),
@@ -251,8 +270,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     ],
                   ),
                 ),
-
-                // Login Link
                 const SizedBox(height: 25),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -260,7 +277,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     Text(
                       'Already have an account? ',
                       style: TextStyle(
-                        color: Colors.grey[400],
+                        color: Colors.black87,
                       ),
                     ),
                     GestureDetector(
@@ -268,7 +285,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const LoginScreen()),
+                            builder: (context) => LoginScreen(),
+                          ),
                         );
                       },
                       child: Text(

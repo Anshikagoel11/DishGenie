@@ -6,7 +6,8 @@ import 'package:dishgenie/screens/home.dart';
 import 'package:dishgenie/auth/register.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  final String? email;
+  const LoginScreen({super.key, this.email});
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -61,7 +62,6 @@ class _LoginScreenState extends State<LoginScreen> {
         final userId = responseData['user']['id'];
         final userEmail = responseData['user']['email'];
 
-        // Save the token and user data to SharedPreferences
         final prefs = await SharedPreferences.getInstance();
         prefs.setString('token', token);
         prefs.setString('userId', userId);
@@ -69,7 +69,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => HomeScreen()),
+          MaterialPageRoute(builder: (_) => HomeScreen(email: email)),
         );
       } else {
         setState(() {
@@ -94,8 +94,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final Color primaryColor = Colors.orange.shade300;
+    final Color accentColor = Colors.orange.shade700;
+
     return Scaffold(
-      backgroundColor: Colors.grey[900],
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: Center(
           child: SingleChildScrollView(
@@ -103,64 +106,57 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Logo/Icon
-                Icon(
-                  Icons.restaurant_menu,
-                  size: 80,
-                  color: Colors.orange[600],
-                ),
+                Icon(Icons.restaurant_menu, size: 80, color: accentColor),
                 const SizedBox(height: 20),
-                // Title
                 Text(
                   'DishGenie',
                   style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.bold,
-                    color: Colors.orange[600],
+                    color: accentColor,
                     letterSpacing: 1.2,
                   ),
                 ),
                 const SizedBox(height: 10),
-                Text(
+                const Text(
                   'Welcome back!',
                   style: TextStyle(
                     fontSize: 16,
-                    color: Colors.grey[400],
+                    color: Colors.black87,
                   ),
                 ),
                 const SizedBox(height: 30),
 
-                // Form Container
+                // Form
                 Container(
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
-                    color: Colors.grey[800],
+                    color: Colors.orange.shade50,
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.3),
-                        blurRadius: 10,
-                        offset: const Offset(0, 5),
+                        color: Colors.orange.shade100,
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
                       ),
                     ],
                   ),
                   child: Column(
                     children: [
-                      // Email Field
+                      // Email
                       TextField(
                         controller: _emailController,
-                        style: const TextStyle(color: Colors.white),
+                        style: const TextStyle(color: Colors.black87),
                         decoration: InputDecoration(
                           labelText: 'Email',
-                          labelStyle: TextStyle(color: Colors.grey[400]),
+                          labelStyle: const TextStyle(color: Colors.black87),
                           filled: true,
-                          fillColor: Colors.grey[700],
+                          fillColor: Colors.white,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                             borderSide: BorderSide.none,
                           ),
-                          prefixIcon:
-                              Icon(Icons.email, color: Colors.orange[600]),
+                          prefixIcon: Icon(Icons.email, color: primaryColor),
                           contentPadding: const EdgeInsets.symmetric(
                               vertical: 16, horizontal: 20),
                         ),
@@ -168,22 +164,21 @@ class _LoginScreenState extends State<LoginScreen> {
                       ),
                       const SizedBox(height: 20),
 
-                      // Password Field
+                      // Password
                       TextField(
                         controller: _passwordController,
-                        style: const TextStyle(color: Colors.white),
                         obscureText: true,
+                        style: const TextStyle(color: Colors.black87),
                         decoration: InputDecoration(
                           labelText: 'Password',
-                          labelStyle: TextStyle(color: Colors.grey[400]),
+                          labelStyle: const TextStyle(color: Colors.black87),
                           filled: true,
-                          fillColor: Colors.grey[700],
+                          fillColor: Colors.white,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(10),
                             borderSide: BorderSide.none,
                           ),
-                          prefixIcon:
-                              Icon(Icons.lock, color: Colors.orange[600]),
+                          prefixIcon: Icon(Icons.lock, color: primaryColor),
                           contentPadding: const EdgeInsets.symmetric(
                               vertical: 16, horizontal: 20),
                         ),
@@ -195,13 +190,13 @@ class _LoginScreenState extends State<LoginScreen> {
                         width: double.infinity,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.orange[600],
-                            foregroundColor: Colors.black,
+                            backgroundColor: accentColor,
+                            foregroundColor: Colors.white,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                             ),
-                            elevation: 5,
+                            elevation: 3,
                           ),
                           onPressed: _login,
                           child: _isLoading
@@ -209,7 +204,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                   height: 20,
                                   width: 20,
                                   child: CircularProgressIndicator(
-                                    color: Colors.black,
+                                    color: Colors.white,
                                     strokeWidth: 2,
                                   ),
                                 )
@@ -218,20 +213,18 @@ class _LoginScreenState extends State<LoginScreen> {
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
-                                    letterSpacing: 1.2,
                                   ),
                                 ),
                         ),
                       ),
 
-                      // Error Message
                       if (_errorMessage.isNotEmpty)
                         Padding(
                           padding: const EdgeInsets.only(top: 16),
                           child: Text(
                             _errorMessage,
-                            style: TextStyle(
-                              color: Colors.red[400],
+                            style: const TextStyle(
+                              color: Colors.red,
                               fontSize: 14,
                             ),
                             textAlign: TextAlign.center,
@@ -241,29 +234,26 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
 
-                // Register Link
                 const SizedBox(height: 25),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
+                    const Text(
                       'New to DishGenie? ',
-                      style: TextStyle(
-                        color: Colors.grey[400],
-                      ),
+                      style: TextStyle(color: Colors.black54),
                     ),
                     GestureDetector(
                       onTap: () {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => const RegisterScreen()),
+                              builder: (_) => const RegisterScreen()),
                         );
                       },
                       child: Text(
                         'Register',
                         style: TextStyle(
-                          color: Colors.orange[600],
+                          color: accentColor,
                           fontWeight: FontWeight.bold,
                         ),
                       ),

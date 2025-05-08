@@ -13,17 +13,13 @@ class RecipeAIBotScreen extends StatefulWidget {
 class _RecipeAIBotScreenState extends State<RecipeAIBotScreen> {
   final TextEditingController _messageController = TextEditingController();
   final List<ChatMessage> _messages = [];
-  final ScrollController _scrollController = ScrollController();
   bool _isLoading = false;
-
-  final Color _orangeDeep = const Color.fromARGB(255, 234, 112, 6);
-  final Color _orangeLight = const Color.fromARGB(255, 242, 140, 77);
-  final Color _orangePale = const Color(0xFFFFF3E0);
-  final Color _background = const Color(0xFFFFFBF5);
+  final ScrollController _scrollController = ScrollController();
 
   @override
   void initState() {
     super.initState();
+    // Add welcome message
     _messages.add(
       const ChatMessage(
         text:
@@ -59,9 +55,21 @@ class _RecipeAIBotScreenState extends State<RecipeAIBotScreen> {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        final recipeText = data['recipe']['fullText'];
+
+        final recipeText = data['recipe'];
 
         if (recipeText != null && recipeText.toString().trim().isNotEmpty) {
+          // Show recipe to user
+          setState(() {
+            _messages.add(
+              ChatMessage(
+                text: recipeText,
+                isUser: false,
+              ),
+            );
+          });
+
+          // Send recipe to second API with the token
           try {
             final prefs = await SharedPreferences.getInstance();
             final token = prefs.getString('token');
@@ -70,52 +78,47 @@ class _RecipeAIBotScreenState extends State<RecipeAIBotScreen> {
               Uri.parse('https://ai-rasoi.onrender.com/api/recipe'),
               headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Bearer $token',
+                'Authorization': 'Bearer $token', // Add the token here
               },
               body: json.encode({'recipe': recipeText}),
             );
 
-            if (secondaryResponse.statusCode == 200) {
-              final parsed = json.decode(secondaryResponse.body);
-              final recipeId = parsed['recipe']['_id'];
-
-              setState(() {
-                _messages.add(ChatMessage(
-                  text: recipeText,
-                  isUser: false,
-                  recipeId: recipeId,
-                ));
-              });
-            } else {
+            if (secondaryResponse.statusCode != 200) {
               debugPrint(
-                  'Secondary API error: ${secondaryResponse.statusCode}');
+                  'Secondary API responded with status: ${secondaryResponse.statusCode}');
             }
           } catch (e) {
-            debugPrint('Secondary API exception: $e');
+            debugPrint('Error sending to secondary API: $e');
           }
         } else {
           setState(() {
-            _messages.add(const ChatMessage(
-              text: 'No valid recipe generated from server.',
-              isUser: false,
-            ));
+            _messages.add(
+              const ChatMessage(
+                text: 'No valid recipe generated from server.',
+                isUser: false,
+              ),
+            );
           });
         }
       } else {
         setState(() {
-          _messages.add(ChatMessage(
-            text:
-                'Recipe generator error (code ${response.statusCode}). Please try again.',
-            isUser: false,
-          ));
+          _messages.add(
+            ChatMessage(
+              text:
+                  'Recipe generator error (code ${response.statusCode}). Please try again.',
+              isUser: false,
+            ),
+          );
         });
       }
     } catch (e) {
       setState(() {
-        _messages.add(const ChatMessage(
-          text: 'Connection error. Please check your internet and try again.',
-          isUser: false,
-        ));
+        _messages.add(
+          const ChatMessage(
+            text: 'Connection error. Please check your internet and try again.',
+            isUser: false,
+          ),
+        );
       });
       debugPrint('Primary API error: $e');
     } finally {
@@ -139,6 +142,7 @@ class _RecipeAIBotScreenState extends State<RecipeAIBotScreen> {
   }
 
   String _extractIngredients(String message) {
+    // Enhanced extraction logic
     final ingredients = message
         .split(RegExp(r'[,\n]'))
         .map((e) => e.trim())
@@ -147,6 +151,7 @@ class _RecipeAIBotScreenState extends State<RecipeAIBotScreen> {
   }
 
   String _extractPreferences(String message) {
+    // Look for preference indicators
     final preferenceWords = [
       'spicy',
       'mild',
@@ -160,56 +165,17 @@ class _RecipeAIBotScreenState extends State<RecipeAIBotScreen> {
     return preferences.isNotEmpty ? preferences.join(', ') : 'balanced flavor';
   }
 
-  Future<void> _addToFavorites(String recipeId) async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString('token');
-
-      final response = await http.post(
-        Uri.parse('https://ai-rasoi.onrender.com/api/favourites/add'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
-        },
-        body: json.encode({'recipeId': recipeId}),
-      );
-
-      if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Added to favorites!")),
-        );
-      } else {
-        debugPrint("Failed to add favorite: ${response.statusCode}");
-      }
-    } catch (e) {
-      debugPrint("Add to fav error: $e");
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: const Size.fromHeight(kToolbarHeight),
-        child: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFFFF8C00), Color(0xFFFFB347)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-          child: AppBar(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            centerTitle: true,
-            title: const Text('Recipe Genie',
-                style: TextStyle(color: Colors.white)),
-            iconTheme: const IconThemeData(color: Colors.white),
-          ),
-        ),
+      appBar: AppBar(
+        title: const Text('Recipe Genie'),
+        centerTitle: true,
+        backgroundColor: Colors.orange[400],
+        elevation: 0,
+        iconTheme: const IconThemeData(color: Colors.white),
       ),
-      backgroundColor: _background,
+      backgroundColor: Colors.grey[50],
       body: Column(
         children: [
           Expanded(
@@ -218,22 +184,7 @@ class _RecipeAIBotScreenState extends State<RecipeAIBotScreen> {
               padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
               itemCount: _messages.length,
               itemBuilder: (context, index) {
-                final msg = _messages[index];
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    msg,
-                    if (!msg.isUser && msg.recipeId != null)
-                      Align(
-                        alignment: Alignment.centerRight,
-                        child: IconButton(
-                          icon: const Icon(Icons.favorite_border,
-                              color: Colors.red),
-                          onPressed: () => _addToFavorites(msg.recipeId!),
-                        ),
-                      ),
-                  ],
-                );
+                return _messages[index];
               },
             ),
           ),
@@ -279,8 +230,10 @@ class _RecipeAIBotScreenState extends State<RecipeAIBotScreen> {
                   borderRadius: BorderRadius.circular(24),
                   borderSide: BorderSide.none,
                 ),
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 14,
+                ),
               ),
               onSubmitted: (_) => _sendMessage(),
             ),
@@ -289,11 +242,7 @@ class _RecipeAIBotScreenState extends State<RecipeAIBotScreen> {
           Container(
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              gradient: LinearGradient(
-                colors: [_orangeDeep, _orangeLight],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+              color: Colors.orange[400],
             ),
             child: IconButton(
               icon: const Icon(Icons.send, color: Colors.white),
@@ -310,14 +259,12 @@ class ChatMessage extends StatelessWidget {
   final String text;
   final bool isUser;
   final bool isWelcome;
-  final String? recipeId;
 
   const ChatMessage({
     super.key,
     required this.text,
     required this.isUser,
     this.isWelcome = false,
-    this.recipeId,
   });
 
   @override
@@ -332,7 +279,7 @@ class ChatMessage extends StatelessWidget {
           if (!isUser && !isWelcome)
             const CircleAvatar(
               radius: 16,
-              backgroundColor: Color(0xFFFF8C00),
+              backgroundColor: Colors.orange,
               child: Icon(Icons.auto_awesome, size: 16, color: Colors.white),
             ),
           if (!isUser && !isWelcome) const SizedBox(width: 8),
@@ -341,9 +288,9 @@ class ChatMessage extends StatelessWidget {
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: isWelcome
-                    ? Color(0xFFFFF3E0)
+                    ? Colors.orange[50]
                     : isUser
-                        ? Color(0xFFFFA040)
+                        ? Colors.orange[400]
                         : Colors.grey[200],
                 borderRadius: BorderRadius.only(
                   topLeft: const Radius.circular(12),
@@ -351,7 +298,8 @@ class ChatMessage extends StatelessWidget {
                   bottomLeft: Radius.circular(isUser ? 12 : 0),
                   bottomRight: Radius.circular(isUser ? 0 : 12),
                 ),
-                border: isWelcome ? Border.all(color: Color(0xFFFFE0B2)) : null,
+                border:
+                    isWelcome ? Border.all(color: Colors.orange[100]!) : null,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -359,12 +307,12 @@ class ChatMessage extends StatelessWidget {
                   if (isWelcome)
                     Row(
                       children: [
-                        Icon(Icons.star, color: Color(0xFFFF8C00), size: 16),
+                        Icon(Icons.star, color: Colors.orange[400], size: 16),
                         const SizedBox(width: 4),
                         Text(
                           'TIP',
                           style: TextStyle(
-                            color: Color(0xFFEF6C00),
+                            color: Colors.orange[600],
                             fontWeight: FontWeight.bold,
                             fontSize: 12,
                           ),
