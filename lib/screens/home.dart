@@ -488,7 +488,7 @@ class _HomeScreenState extends State<HomeScreen>
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const RecipeAIBotScreen(),
+                              builder: (context) => RecipeAIBotScreen(),
                             ),
                           );
                         },
@@ -558,8 +558,7 @@ class _HomeScreenState extends State<HomeScreen>
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) =>
-                                          const RecipeAIBotScreen(),
+                                      builder: (context) => RecipeAIBotScreen(),
                                     ),
                                   );
                                 },
@@ -716,7 +715,7 @@ class _HomeScreenState extends State<HomeScreen>
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const RecipeAIBotScreen(),
+                      builder: (context) => RecipeAIBotScreen(),
                     ),
                   );
                   break;
