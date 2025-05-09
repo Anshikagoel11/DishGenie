@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart'; // Import the uuid package
 
 class RecipeAIBotScreen extends StatefulWidget {
   const RecipeAIBotScreen({super.key});
@@ -15,11 +16,12 @@ class _RecipeAIBotScreenState extends State<RecipeAIBotScreen> {
   final List<ChatMessage> _messages = [];
   bool _isLoading = false;
   final ScrollController _scrollController = ScrollController();
+  String? _lastRecipeText; // Store the recipe text
+  final Uuid _uuid = Uuid(); // Initialize the UUID generator
 
   @override
   void initState() {
     super.initState();
-    // Add welcome message
     _messages.add(
       const ChatMessage(
         text:
@@ -55,70 +57,33 @@ class _RecipeAIBotScreenState extends State<RecipeAIBotScreen> {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-
         final recipeText = data['recipe'];
+        debugPrint("$recipeText*");
 
         if (recipeText != null && recipeText.toString().trim().isNotEmpty) {
-          // Show recipe to user
           setState(() {
-            _messages.add(
-              ChatMessage(
-                text: recipeText,
-                isUser: false,
-              ),
-            );
+            _messages.add(ChatMessage(text: recipeText, isUser: false));
+            _lastRecipeText = recipeText; // Store recipe text here
           });
-
-          // Send recipe to second API with the token
-          try {
-            final prefs = await SharedPreferences.getInstance();
-            final token = prefs.getString('token');
-
-            final secondaryResponse = await http.post(
-              Uri.parse('https://ai-rasoi.onrender.com/api/recipe'),
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': 'Bearer $token', // Add the token here
-              },
-              body: json.encode({'recipe': recipeText}),
-            );
-
-            if (secondaryResponse.statusCode != 200) {
-              debugPrint(
-                  'Secondary API responded with status: ${secondaryResponse.statusCode}');
-            }
-          } catch (e) {
-            debugPrint('Error sending to secondary API: $e');
-          }
         } else {
           setState(() {
-            _messages.add(
-              const ChatMessage(
-                text: 'No valid recipe generated from server.',
-                isUser: false,
-              ),
-            );
+            _messages.add(const ChatMessage(
+                text: 'No valid recipe generated from server.', isUser: false));
           });
         }
       } else {
         setState(() {
-          _messages.add(
-            ChatMessage(
+          _messages.add(ChatMessage(
               text:
                   'Recipe generator error (code ${response.statusCode}). Please try again.',
-              isUser: false,
-            ),
-          );
+              isUser: false));
         });
       }
     } catch (e) {
       setState(() {
-        _messages.add(
-          const ChatMessage(
+        _messages.add(const ChatMessage(
             text: 'Connection error. Please check your internet and try again.',
-            isUser: false,
-          ),
-        );
+            isUser: false));
       });
       debugPrint('Primary API error: $e');
     } finally {
@@ -126,6 +91,74 @@ class _RecipeAIBotScreenState extends State<RecipeAIBotScreen> {
         _isLoading = false;
       });
       _scrollToBottom();
+    }
+  }
+
+  Future<void> _sendRecipeToFavorites(String recipeText) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString('token');
+
+      if (token == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('You need to log in to add favorites')),
+        );
+        return;
+      }
+
+      // Step 1: First create the recipe in the database
+      final createRecipeResponse = await http.post(
+        Uri.parse('http://localhost:5000/api/recipe'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $token',
+        },
+        body: json.encode({"recipe": recipeText}),
+      );
+
+      if (createRecipeResponse.statusCode == 201) {
+        final createdRecipeData = json.decode(createRecipeResponse.body);
+        final recipeId = createdRecipeData['recipe']['_id'];
+
+        debugPrint('✅ Recipe created successfully with ID: $recipeId');
+
+        // Step 2: Now add the recipe to favorites using the ID returned from create
+        final addToFavoritesResponse = await http.post(
+          Uri.parse('http://localhost:5000/api/favourites/add'),
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer $token',
+          },
+          body: json.encode({
+            "recipe": {"_id": recipeId}
+          }),
+        );
+
+        if (addToFavoritesResponse.statusCode == 201) {
+          debugPrint('✅ Recipe added to favorites successfully');
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Recipe added to favorites')),
+          );
+        } else {
+          debugPrint(
+              '❌ Failed to add recipe to favorites: ${addToFavoritesResponse.statusCode}');
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Failed to add to favorites')),
+          );
+        }
+      } else {
+        debugPrint(
+            '❌ Failed to create recipe: ${createRecipeResponse.statusCode}');
+        debugPrint('Error response: ${createRecipeResponse.body}');
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to create recipe')),
+        );
+      }
+    } catch (e) {
+      debugPrint('❌ Error adding recipe to favorites: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Error adding to favorites')),
+      );
     }
   }
 
@@ -142,7 +175,6 @@ class _RecipeAIBotScreenState extends State<RecipeAIBotScreen> {
   }
 
   String _extractIngredients(String message) {
-    // Enhanced extraction logic
     final ingredients = message
         .split(RegExp(r'[,\n]'))
         .map((e) => e.trim())
@@ -151,7 +183,6 @@ class _RecipeAIBotScreenState extends State<RecipeAIBotScreen> {
   }
 
   String _extractPreferences(String message) {
-    // Look for preference indicators
     final preferenceWords = [
       'spicy',
       'mild',
@@ -192,13 +223,28 @@ class _RecipeAIBotScreenState extends State<RecipeAIBotScreen> {
             const Padding(
               padding: EdgeInsets.all(16.0),
               child: SizedBox(
-                height: 24,
-                width: 24,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
+                  height: 24,
+                  width: 24,
+                  child: CircularProgressIndicator(strokeWidth: 2)),
             ),
           _buildMessageInput(),
         ],
+      ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(12.0),
+        child: ElevatedButton.icon(
+          onPressed: _lastRecipeText != null
+              ? () => _sendRecipeToFavorites(_lastRecipeText!)
+              : null,
+          icon: const Icon(Icons.favorite, color: Colors.white),
+          label: const Text("Add to Favorites"),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.orange[400],
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+          ),
+        ),
       ),
     );
   }
@@ -210,10 +256,9 @@ class _RecipeAIBotScreenState extends State<RecipeAIBotScreen> {
         color: Colors.white,
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            blurRadius: 8,
-            offset: const Offset(0, -2),
-          ),
+              color: Colors.grey.withOpacity(0.2),
+              blurRadius: 8,
+              offset: const Offset(0, -2))
         ],
       ),
       child: Row(
@@ -230,10 +275,8 @@ class _RecipeAIBotScreenState extends State<RecipeAIBotScreen> {
                   borderRadius: BorderRadius.circular(24),
                   borderSide: BorderSide.none,
                 ),
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 14,
-                ),
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
               ),
               onSubmitted: (_) => _sendMessage(),
             ),
@@ -241,13 +284,10 @@ class _RecipeAIBotScreenState extends State<RecipeAIBotScreen> {
           const SizedBox(width: 8),
           Container(
             decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.orange[400],
-            ),
+                shape: BoxShape.circle, color: Colors.orange[400]),
             child: IconButton(
-              icon: const Icon(Icons.send, color: Colors.white),
-              onPressed: _sendMessage,
-            ),
+                icon: const Icon(Icons.send, color: Colors.white),
+                onPressed: _sendMessage),
           ),
         ],
       ),
@@ -260,12 +300,11 @@ class ChatMessage extends StatelessWidget {
   final bool isUser;
   final bool isWelcome;
 
-  const ChatMessage({
-    super.key,
-    required this.text,
-    required this.isUser,
-    this.isWelcome = false,
-  });
+  const ChatMessage(
+      {super.key,
+      required this.text,
+      required this.isUser,
+      this.isWelcome = false});
 
   @override
   Widget build(BuildContext context) {
@@ -278,10 +317,9 @@ class ChatMessage extends StatelessWidget {
         children: [
           if (!isUser && !isWelcome)
             const CircleAvatar(
-              radius: 16,
-              backgroundColor: Colors.orange,
-              child: Icon(Icons.auto_awesome, size: 16, color: Colors.white),
-            ),
+                radius: 16,
+                backgroundColor: Colors.orange,
+                child: Icon(Icons.auto_awesome, size: 16, color: Colors.white)),
           if (!isUser && !isWelcome) const SizedBox(width: 8),
           Flexible(
             child: Container(
@@ -298,49 +336,16 @@ class ChatMessage extends StatelessWidget {
                   bottomLeft: Radius.circular(isUser ? 12 : 0),
                   bottomRight: Radius.circular(isUser ? 0 : 12),
                 ),
-                border:
-                    isWelcome ? Border.all(color: Colors.orange[100]!) : null,
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (isWelcome)
-                    Row(
-                      children: [
-                        Icon(Icons.star, color: Colors.orange[400], size: 16),
-                        const SizedBox(width: 4),
-                        Text(
-                          'TIP',
-                          style: TextStyle(
-                            color: Colors.orange[600],
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                          ),
-                        ),
-                      ],
-                    ),
-                  if (isWelcome) const SizedBox(height: 4),
-                  Text(
-                    text,
-                    style: TextStyle(
-                      color: isWelcome
-                          ? Colors.grey[800]
-                          : isUser
-                              ? Colors.white
-                              : Colors.grey[800],
-                    ),
-                  ),
-                ],
+              child: Text(
+                text,
+                style: TextStyle(
+                  color: isUser ? Colors.white : Colors.black87,
+                  fontSize: 16,
+                ),
               ),
             ),
           ),
-          if (isUser) const SizedBox(width: 8),
-          if (isUser)
-            const CircleAvatar(
-              radius: 16,
-              backgroundColor: Colors.grey,
-              child: Icon(Icons.person, size: 16, color: Colors.white),
-            ),
         ],
       ),
     );

@@ -1,6 +1,5 @@
 import 'package:dishgenie/auth/login.dart';
 import 'package:dishgenie/auth/register.dart';
-import 'package:dishgenie/screens/home.dart';
 import 'package:flutter/material.dart';
 
 class AuthScreen extends StatelessWidget {
