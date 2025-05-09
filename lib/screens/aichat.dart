@@ -26,13 +26,23 @@ class _RecipeBotScreenState extends State<RecipeBotScreen> {
     'Quick to cook'
   ];
 
+  // Color palette
+  final Color _primaryColor = Color(0xFFFF6D00);
+  final Color _secondaryColor = Color(0xFFFF9E40);
+  final Color _accentColor = Color(0xFFFF3D00);
+  final Color _backgroundColor = Color(0xFFFFF3E0);
+  final Color _cardColor = Colors.white;
+  final Color _textColor = Color(0xFF333333);
+
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent,
-        duration: Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
     });
   }
 
@@ -64,8 +74,10 @@ class _RecipeBotScreenState extends State<RecipeBotScreen> {
       });
     } catch (e) {
       setState(() {
-        _messages
-            .add({'text': '❌ Error generating recipe.\n$e', 'isUser': false});
+        _messages.add({
+          'text': '❌ Error generating recipe.\nPlease try again.',
+          'isUser': false
+        });
       });
     } finally {
       setState(() => _isLoading = false);
@@ -115,8 +127,10 @@ class _RecipeBotScreenState extends State<RecipeBotScreen> {
       });
     } catch (e) {
       setState(() {
-        _messages
-            .add({'text': '❌ Error processing image.\n$e', 'isUser': false});
+        _messages.add({
+          'text': '❌ Error processing image.\nPlease try again.',
+          'isUser': false
+        });
       });
     } finally {
       setState(() => _isLoading = false);
@@ -127,104 +141,201 @@ class _RecipeBotScreenState extends State<RecipeBotScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.orange[50],
+      backgroundColor: _backgroundColor,
       appBar: AppBar(
-        title: const Text('DishGenie'),
-        backgroundColor: Colors.deepOrange,
+        title: Text(
+          'Recipe AI Chef',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        backgroundColor: _primaryColor,
+        centerTitle: true,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(
+            bottom: Radius.circular(16),
+          ),
+        ),
       ),
       body: Column(
         children: [
           // Chat messages
           Expanded(
-            child: ListView.builder(
-              controller: _scrollController,
-              padding: EdgeInsets.all(8),
-              itemCount: _messages.length,
-              itemBuilder: (context, index) {
-                final message = _messages[index];
-                return Align(
-                  alignment: message['isUser']
-                      ? Alignment.centerRight
-                      : Alignment.centerLeft,
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(vertical: 4),
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color:
-                          message['isUser'] ? Colors.orange[100] : Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.shade300,
-                          blurRadius: 4,
-                          offset: const Offset(2, 2),
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    _backgroundColor.withOpacity(0.8),
+                    _backgroundColor.withOpacity(0.4),
+                  ],
+                ),
+              ),
+              child: ListView.builder(
+                controller: _scrollController,
+                padding: EdgeInsets.all(16),
+                itemCount: _messages.length,
+                itemBuilder: (context, index) {
+                  final message = _messages[index];
+                  return Align(
+                    alignment: message['isUser']
+                        ? Alignment.centerRight
+                        : Alignment.centerLeft,
+                    child: Container(
+                      margin: EdgeInsets.symmetric(vertical: 8),
+                      padding: EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: message['isUser']
+                            ? _secondaryColor.withOpacity(0.2)
+                            : _cardColor,
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(16),
+                          topRight: Radius.circular(16),
+                          bottomLeft: message['isUser']
+                              ? Radius.circular(16)
+                              : Radius.circular(4),
+                          bottomRight: message['isUser']
+                              ? Radius.circular(4)
+                              : Radius.circular(16),
                         ),
-                      ],
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.grey.withOpacity(0.1),
+                            blurRadius: 8,
+                            offset: Offset(2, 4),
+                          ),
+                        ],
+                      ),
+                      child: Text(
+                        message['text'],
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: _textColor,
+                        ),
+                      ),
                     ),
-                    child: Text(
-                      message['text'],
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
           ),
 
           // Loading indicator
           if (_isLoading)
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 8),
-              child: CircularProgressIndicator(),
+            Padding(
+              padding: EdgeInsets.symmetric(vertical: 16),
+              child: Container(
+                padding: EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: _cardColor,
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.2),
+                      blurRadius: 8,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(_primaryColor),
+                  strokeWidth: 3,
+                ),
+              ),
             ),
 
-          // Preferences dropdown + input
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4),
-            child: Row(
-              children: [
-                DropdownButton<String>(
-                  value: _selectedPreference.isNotEmpty
-                      ? _selectedPreference
-                      : null,
-                  hint: const Text("Preferences"),
-                  onChanged: (value) {
-                    setState(() => _selectedPreference = value ?? '');
-                  },
-                  items: _preferenceOptions.map((pref) {
-                    return DropdownMenuItem(
-                      value: pref,
-                      child: Text(pref),
-                    );
-                  }).toList(),
+          // Preferences dropdown
+          Container(
+            margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: _cardColor,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: Offset(0, 2),
                 ),
               ],
+            ),
+            child: DropdownButton<String>(
+              isExpanded: true,
+              value:
+                  _selectedPreference.isNotEmpty ? _selectedPreference : null,
+              hint: Text(
+                "Select preference...",
+                style: TextStyle(color: _textColor.withOpacity(0.6)),
+              ),
+              icon: Icon(Icons.arrow_drop_down, color: _primaryColor),
+              underline: SizedBox(),
+              onChanged: (value) {
+                setState(() => _selectedPreference = value ?? '');
+              },
+              items: _preferenceOptions.map((pref) {
+                return DropdownMenuItem(
+                  value: pref,
+                  child: Text(
+                    pref,
+                    style: TextStyle(color: _textColor),
+                  ),
+                );
+              }).toList(),
             ),
           ),
 
           // Input row
-          Row(
-            children: [
-              IconButton(
-                icon: Icon(Icons.image, color: Colors.deepOrange),
-                onPressed: _sendImageMessage,
-              ),
-              Expanded(
-                child: TextField(
-                  controller: _textController,
-                  decoration: const InputDecoration(
-                    hintText: 'Enter ingredients...',
-                    filled: true,
-                    fillColor: Colors.white,
-                    border: OutlineInputBorder(),
+          Container(
+            margin: EdgeInsets.all(16),
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: _cardColor,
+              borderRadius: BorderRadius.circular(24),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                IconButton(
+                  icon: Icon(Icons.image, color: _primaryColor),
+                  onPressed: _sendImageMessage,
+                ),
+                Expanded(
+                  child: TextField(
+                    controller: _textController,
+                    decoration: InputDecoration(
+                      hintText: 'Enter ingredients...',
+                      hintStyle: TextStyle(color: _textColor.withOpacity(0.5)),
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.symmetric(horizontal: 8),
+                    ),
+                    style: TextStyle(color: _textColor),
                   ),
                 ),
-              ),
-              IconButton(
-                icon: Icon(Icons.send, color: Colors.deepOrange),
-                onPressed: _sendTextMessage,
-              ),
-            ],
+                Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      colors: [_primaryColor, _accentColor],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                  ),
+                  child: IconButton(
+                    icon: Icon(Icons.send, color: Colors.white),
+                    onPressed: _sendTextMessage,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),

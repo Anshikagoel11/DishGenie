@@ -1,3 +1,4 @@
+import 'package:dishgenie/screens/dietplan.dart';
 import 'package:dishgenie/screens/feed.dart';
 import 'package:dishgenie/screens/postRecipe.dart';
 import 'package:dishgenie/screens/profile.dart';
@@ -689,6 +690,90 @@ class _HomeScreenState extends State<HomeScreen>
                   ],
                 ),
               ),
+
+              // Diet Plan Section
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const SizedBox(height: 16),
+                    Text(
+                      'Your Diet Plan',
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                        color: _textColor,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => DietPlanScreen(),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              _lightOrange.withOpacity(0.8),
+                              _primaryOrange,
+                            ],
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: _primaryOrange.withOpacity(0.2),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(Icons.health_and_safety,
+                                size: 40, color: Colors.white),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Personalized Diet Plan',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Get customized meal plans based on your goals',
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.white.withOpacity(0.9),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Icon(Icons.arrow_forward_ios, color: Colors.white),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                ),
+              ),
             ],
           ),
         ),
@@ -715,7 +800,7 @@ class _HomeScreenState extends State<HomeScreen>
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => RecipeBotScreen(),
+                      builder: (context) => RecipeFeedScreen(),
                     ),
                   );
                   break;
@@ -723,8 +808,7 @@ class _HomeScreenState extends State<HomeScreen>
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) =>
-                          PostRecipeScreen(email: widget.email),
+                      builder: (context) => RecipeBotScreen(),
                     ),
                   );
                   break;
@@ -732,7 +816,8 @@ class _HomeScreenState extends State<HomeScreen>
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const RecipeFeedScreen(),
+                      builder: (context) =>
+                          PostRecipeScreen(email: widget.email),
                     ),
                   );
                   break;
@@ -770,9 +855,22 @@ class _HomeScreenState extends State<HomeScreen>
                 icon: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 200),
                   child: Icon(
-                    Icons.chat_bubble,
+                    Icons.chat_bubble_outline_outlined,
                     key: ValueKey<bool>(_currentNavIndex == 1),
                     color: _currentNavIndex == 1
+                        ? _primaryOrange
+                        : Colors.grey[600],
+                  ),
+                ),
+                label: 'Feed',
+              ),
+              BottomNavigationBarItem(
+                icon: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  child: Icon(
+                    Icons.chat_bubble,
+                    key: ValueKey<bool>(_currentNavIndex == 2),
+                    color: _currentNavIndex == 2
                         ? _primaryOrange
                         : Colors.grey[600],
                   ),
@@ -784,8 +882,8 @@ class _HomeScreenState extends State<HomeScreen>
                   duration: const Duration(milliseconds: 200),
                   child: Icon(
                     Icons.smart_button,
-                    key: ValueKey<bool>(_currentNavIndex == 2),
-                    color: _currentNavIndex == 2
+                    key: ValueKey<bool>(_currentNavIndex == 3),
+                    color: _currentNavIndex == 3
                         ? _primaryOrange
                         : Colors.grey[600],
                   ),
@@ -796,22 +894,9 @@ class _HomeScreenState extends State<HomeScreen>
                 icon: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 200),
                   child: Icon(
-                    Icons.chat_sharp,
-                    key: ValueKey<bool>(_currentNavIndex == 3),
-                    color: _currentNavIndex == 3
-                        ? _primaryOrange
-                        : Colors.grey[600],
-                  ),
-                ),
-                label: 'Feed',
-              ),
-              BottomNavigationBarItem(
-                icon: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 200),
-                  child: Icon(
                     Icons.person,
                     key: ValueKey<bool>(_currentNavIndex == 4),
-                    color: _currentNavIndex == 3
+                    color: _currentNavIndex == 4
                         ? _primaryOrange
                         : Colors.grey[600],
                   ),
