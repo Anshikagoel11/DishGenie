@@ -1,16 +1,44 @@
-# dishgenie
+# 🥗 AI Diet & Recipe Sharing App – Built with Flutter
 
-A new Flutter project.
+A modern, AI-powered Flutter app that helps users get personalized diet plans based on health conditions, discover recipes using available ingredients or food images, and share meals socially like a food community.
 
-## Getting Started
+---
 
-This project is a starting point for a Flutter application.
+## ✨ Features
 
-A few resources to get you started if this is your first Flutter project:
+- 🩺 **Personalized Diet Plans** based on your health condition
+- 🤖 **AI-Generated Dish Suggestions** using ingredients you have
+- 📷 **Image Recognition** to suggest recipes from photos
+- 📢 **Post & Share Dishes** with others, like in social media
+- 🎨 **Clean, Flutter-based UI** with smooth, responsive experience
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+---
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 📱 Screenshots
+![IMG-20250610-WA0003](https://github.com/user-attachments/assets/9b14f371-0f9c-499e-98b5-e80ae5bd6904)
+![IMG-20250610-WA0001](https://github.com/user-attachments/assets/cf81c076-a87c-4706-80bb-a15bf8a02f4b)
+![IMG-20250610-WA0004](https://github.com/user-attachments/assets/10727ed2-9742-4820-9ad2-bb3603ffc9a9)
+![IMG-20250610-WA0002](https://github.com/user-attachments/assets/bbae32c4-10c0-447e-b97d-4003652c04e3)
+
+> 
+
+---
+
+## 🛠️ Tech Stack
+
+- **Framework**: Flutter
+- **Language**: Dart
+- **AI Integration**:  AI model
+- **Backend**: Node.js , MongoDB
+- **Image Handling**: File picker
+
+---
+
+## 🚀 Getting Started
+
+### 📦 Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/<your-username>/<repo-name>.git
+cd DishGenie
