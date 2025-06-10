@@ -40,5 +40,5 @@ A modern, AI-powered Flutter app that helps users get personalized diet plans ba
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/<your-username>/<repo-name>.git
+git clone https://github.com/Anshikagoel11/DishGenie.git
 cd DishGenie
